@@ -1,0 +1,12 @@
+{
+    "conversations": {
+        "999999": {
+            "userId": 999999,
+            "state": "test_state",
+            "data": {
+                "testValue": "This is a test value"
+            },
+            "lastActivityTime": "2025-05-15T18:35:36.874Z"
+        }
+    }
+}

@@ -1,0 +1,12 @@
+{
+    "conversations": {
+        "12345": {
+            "userId": 12345,
+            "state": "idle",
+            "data": {
+                "test": "data"
+            },
+            "lastActivityTime": "2025-05-15T18:25:30.532Z"
+        }
+    }
+}

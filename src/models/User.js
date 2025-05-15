@@ -4,20 +4,27 @@
 class User {
   /**
    * Create a new user
-   * @param {Object} data - User data
-   * @param {Number} data.id - Telegram user ID
-   * @param {String} data.firstName - User's first name
-   * @param {String} data.lastName - User's last name
-   * @param {String} data.username - User's username
+   * @param {Number} id - Telegram user ID
+   * @param {String} firstName - User's first name
+   * @param {String} lastName - User's last name
+   * @param {String} username - User's username
+   * @param {String} languageCode - User's language code
    */
-  constructor(data) {
-    this.id = data.id;
-    this.firstName = data.firstName || '';
-    this.lastName = data.lastName || '';
-    this.username = data.username || '';
-    this.language = data.language || 'km';
-    this.createdAt = data.createdAt || new Date();
-    this.lastActive = data.lastActive || new Date();
+  constructor(id, firstName, lastName, username, languageCode) {
+    this.id = id;
+    this.firstName = firstName || '';
+    this.lastName = lastName || '';
+    this.username = username || '';
+    this.languageCode = languageCode || 'km';
+    this.registrationDate = new Date();
+    this.lastActive = new Date();
+    this.preferences = {};
+    this.interactions = {
+      commandCount: 0,
+      messageCount: 0,
+      lastCommand: null,
+      lastInteraction: new Date()
+    };
   }
 
   /**
@@ -25,7 +32,48 @@ class User {
    * @returns {String} User's full name
    */
   getFullName() {
-    return `${this.firstName} ${this.lastName}`.trim();
+    return this.firstName + (this.lastName ? ' ' + this.lastName : '');
+  }
+
+  /**
+   * Update user's activity
+   * @returns {User} Updated user instance
+   */
+  updateActivity() {
+    this.lastActive = new Date();
+    this.interactions.lastInteraction = new Date();
+    return this;
+  }
+
+  /**
+   * Record a command interaction
+   * @param {String} command - Command executed by the user
+   * @returns {User} Updated user instance
+   */
+  recordCommand(command) {
+    this.interactions.commandCount++;
+    this.interactions.lastCommand = command;
+    return this.updateActivity();
+  }
+
+  /**
+   * Record a message interaction
+   * @returns {User} Updated user instance
+   */
+  recordMessage() {
+    this.interactions.messageCount++;
+    return this.updateActivity();
+  }
+
+  /**
+   * Set a user preference
+   * @param {String} key - Preference key
+   * @param {any} value - Preference value
+   * @returns {User} Updated user instance
+   */
+  setPreference(key, value) {
+    this.preferences[key] = value;
+    return this;
   }
 
   /**
@@ -34,15 +82,13 @@ class User {
    * @returns {User} User instance
    */
   static fromTelegramUser(telegramUser) {
-    return new User({
-      id: telegramUser.id,
-      firstName: telegramUser.first_name,
-      lastName: telegramUser.last_name,
-      username: telegramUser.username,
-      language: telegramUser.language_code === 'km' ? 'km' : 'km', // Default to Khmer
-      createdAt: new Date(),
-      lastActive: new Date()
-    });
+    return new User(
+      telegramUser.id,
+      telegramUser.first_name,
+      telegramUser.last_name,
+      telegramUser.username,
+      telegramUser.language_code
+    );
   }
 }
 

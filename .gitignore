@@ -42,5 +42,18 @@ jspm_packages/
 # dotenv environment variable files
 .env.*
 
-# Data directory
-data/
+# Backup files
+backups/
+
+# Temporary test files
+test-*.js
+**/test_*.js
+
+# IDE and editor files
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+.DS_Store

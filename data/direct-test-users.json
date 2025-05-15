@@ -1,0 +1,11 @@
+{
+    "users": {
+        "12345": {
+            "id": 12345,
+            "firstName": "Test",
+            "lastName": "User",
+            "username": "testuser",
+            "lastActive": "2025-05-15T18:25:30.531Z"
+        }
+    }
+}

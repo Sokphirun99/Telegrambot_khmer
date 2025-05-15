@@ -1,0 +1,20 @@
+{
+    "users": {
+        "999999": {
+            "id": 999999,
+            "firstName": "Test",
+            "lastName": "User",
+            "username": "testuser",
+            "languageCode": "en",
+            "registrationDate": "2025-05-15T18:30:28.880Z",
+            "lastActive": "2025-05-15T18:30:28.880Z",
+            "preferences": {},
+            "interactions": {
+                "commandCount": 0,
+                "messageCount": 0,
+                "lastCommand": null,
+                "lastInteraction": "2025-05-15T18:30:28.880Z"
+            }
+        }
+    }
+}

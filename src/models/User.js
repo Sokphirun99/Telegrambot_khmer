@@ -64,6 +64,54 @@ class User {
     this.interactions.messageCount++;
     return this.updateActivity();
   }
+  
+  /**
+   * Record a generic interaction
+   * @param {String} type - The type of interaction
+   * @param {Object} details - Optional details about the interaction
+   * @returns {User} Updated user instance
+   */
+  recordInteraction(type, details = {}) {
+    // Initialize interactions tracking if it doesn't exist
+    if (!this.interactions) {
+      this.interactions = {
+        commandCount: 0,
+        messageCount: 0,
+        lastCommand: null,
+        lastInteraction: new Date(),
+        history: []
+      };
+    }
+    
+    // Initialize history array if it doesn't exist
+    if (!this.interactions.history) {
+      this.interactions.history = [];
+    }
+    
+    // Add interaction to history with timestamp
+    this.interactions.history.push({
+      type: type,
+      timestamp: new Date().toISOString(),
+      details: details
+    });
+    
+    // Limit history to last 50 interactions to avoid excessive data
+    if (this.interactions.history.length > 50) {
+      this.interactions.history = this.interactions.history.slice(-50);
+    }
+    
+    // Update counts based on type
+    if (type === 'message') {
+      this.interactions.messageCount++;
+    } else if (type === 'command') {
+      this.interactions.commandCount++;
+      if (details.command) {
+        this.interactions.lastCommand = details.command;
+      }
+    }
+    
+    return this.updateActivity();
+  }
 
   /**
    * Set a user preference

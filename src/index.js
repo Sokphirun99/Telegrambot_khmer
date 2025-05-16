@@ -266,29 +266,31 @@ function setUpMessageHandling() {
       // Extract command
       command = match[1];
       
-      // Get or create user
-      const user = new User(
-        msg.from.id, 
-        msg.from.first_name,
-        msg.from.last_name,
-        msg.from.username,
-        msg.from.language_code
-      );
-      
-      // Log new user registration
-      if (dataService.isNewUser(user.id)) {
-        logInfo(`New user registered: ${user.getFullName()} (${user.id})`);
+      // Get existing user or create a new one if not found
+      let user;
+      if (dataService.isNewUser(msg.from.id)) {
+        // Create a new user
+        user = new User(
+          msg.from.id, 
+          msg.from.first_name,
+          msg.from.last_name,
+          msg.from.username,
+          msg.from.language_code
+        );
+        logInfo(`New user registered via command: ${user.getFullName()} (${user.id})`);
+        
+        // Save the new user
+        dataService.saveUser(user);
+        
+        // Force an immediate save to disk for new users
+        dataService.saveDataToFiles();
+      } else {
+        // Get existing user
+        user = dataService.getUser(msg.from.id);
       }
       
-      // Save or update user data
-      dataService.saveUser(user);
-      
-      // Force a save to disk
-      logInfo(`Forcing data save for user ${user.id}`);
-      dataService.saveDataToFiles();
-      
-      // Process command
-      commandHandler.handleCommand(bot, msg, command, user, dataService);
+      // Process command - recordInteraction and save now happen inside handleCommand
+      commandHandler.handleCommand(bot, msg, command, user);
     } catch (error) {
       logError(`Error handling command "${command}" from user ${msg.from ? msg.from.id : 'unknown'}`, error);
       
@@ -310,28 +312,47 @@ function setUpMessageHandling() {
     // Commands are handled separately
     if (msg.text && msg.text.startsWith('/')) return;
     
-    // Save or update user
-    const user = new User(
-      msg.from.id,
-      msg.from.first_name,
-      msg.from.last_name,
-      msg.from.username,
-      msg.from.language_code
-    );
-    
-    dataService.saveUser(user);
-    
     try {
+      // Get existing user or create a new one if not found
+      let user;
+      if (dataService.isNewUser(msg.from.id)) {
+        // Create a new user if this is a first-time interaction
+        user = new User(
+          msg.from.id,
+          msg.from.first_name,
+          msg.from.last_name,
+          msg.from.username,
+          msg.from.language_code
+        );
+        logInfo(`New user registered via message: ${user.getFullName()} (${user.id})`);
+      } else {
+        // Get existing user and update last activity
+        user = dataService.getUser(msg.from.id);
+        user.updateActivity();
+      }
+      
       // Get conversation state or create new one
       const conversation = dataService.getConversation(user.id);
       
       // Process message
       messageHandler.handleMessage(bot, msg, user, conversation);
       
+      // Save user data - this happens inside messageHandler for specific actions now
+      
       // Save updated conversation state
       dataService.saveConversation(user.id, conversation);
     } catch (error) {
       logError('Error in message handler', error);
+      
+      // Make sure to save the user's data even when we encounter an error
+      if (user) {
+        try {
+          dataService.saveUser(user);
+          dataService.saveDataToFiles(); // Force save to ensure data is not lost due to error
+        } catch (saveError) {
+          logError('Failed to save user data after error:', saveError);
+        }
+      }
       
       try {
         // Send generic error message
